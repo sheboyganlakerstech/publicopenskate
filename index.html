@@ -13,6 +13,8 @@
     --text-mute: #93a9c6;
     --cond: 'Oswald', 'DejaVu Sans Condensed', 'Arial Narrow', sans-serif;
     --mono: 'Roboto Mono', 'DejaVu Sans Mono', monospace;
+    /* set from script so the rows always fill the screen without overflowing */
+    --k: 1;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { width: 1920px; height: 1080px; }
@@ -50,6 +52,7 @@
   .brand-sub {
     text-align: center;
     margin-top: 12px;
+    min-height: 1.2em;
     font-family: var(--cond);
     font-weight: 600;
     font-size: 30px;
@@ -77,7 +80,9 @@
     border-bottom: 1px solid rgba(76,196,242,0.35);
   }
   .row {
-    flex: 1;
+    flex: 1 1 0;
+    max-height: 120px;
+    min-height: 0;
     border-bottom: 1px solid rgba(76,196,242,0.13);
   }
   .row:nth-child(even) { background: rgba(76,196,242,0.06); }
@@ -88,7 +93,7 @@
   .date {
     font-family: var(--cond);
     font-weight: 600;
-    font-size: 40px;
+    font-size: calc(40px * var(--k));
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: var(--ice);
@@ -98,18 +103,20 @@
   .time {
     font-family: var(--mono);
     font-weight: 700;
-    font-size: 40px;
+    font-size: calc(40px * var(--k));
     color: var(--amber);
     white-space: nowrap;
   }
   .event {
     font-family: var(--cond);
     font-weight: 700;
-    font-size: 50px;
+    font-size: calc(50px * var(--k));
     line-height: 1.05;
     text-transform: uppercase;
     letter-spacing: 0.01em;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .event small {
     font-size: 0.62em;
@@ -117,6 +124,33 @@
     color: var(--text-mute);
     margin-left: 0.4em;
     letter-spacing: 0.06em;
+  }
+
+  /* shown instead of the table when the sheet can't be read, or the week is empty */
+  .notice {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 28px;
+  }
+  .notice svg { width: 260px; height: 260px; }
+  .notice h2 {
+    font-family: var(--cond);
+    font-weight: 700;
+    font-size: 72px;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+  }
+  .notice p {
+    font-family: var(--cond);
+    font-weight: 600;
+    font-size: 40px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ice);
   }
 
   footer {
@@ -137,29 +171,288 @@
     <img class="brand-logo" src="logo.png" alt="Sheboygan Lakers Hockey">
     <div>
       <div class="brand-title">Public Ice Schedule</div>
-      <div class="brand-sub">October 14 – 18</div>
+      <div class="brand-sub" id="range"></div>
     </div>
     <div></div>
   </header>
 
-  <main>
-    <div class="cols"><span>Date</span><span>Time</span><span>Event</span></div>
-
-    <div class="row day-start"><div class="date"><span class="dow">Wed</span>Oct 14</div><div class="time">1:15 – 3:15 PM</div><div class="event">Public Open Skate</div></div>
-
-    <div class="row day-start"><div class="date"><span class="dow">Thu</span>Oct 15</div><div class="time">9:30 – 10:30 AM</div><div class="event">Parent / Tot Skate</div></div>
-    <div class="row"><div class="date"></div><div class="time">1:15 – 3:15 PM</div><div class="event">Public Open Skate</div></div>
-
-    <div class="row day-start"><div class="date"><span class="dow">Fri</span>Oct 16</div><div class="time">10:45 – 11:45 AM</div><div class="event">Senior Skate</div></div>
-    <div class="row"><div class="date"></div><div class="time">12:00 – 1:00 PM</div><div class="event">Open Hockey</div></div>
-    <div class="row"><div class="date"></div><div class="time">1:15 – 3:15 PM</div><div class="event">Public Open Skate</div></div>
-
-    <div class="row day-start"><div class="date"><span class="dow">Sat</span>Oct 17</div><div class="time">11:45 AM – 12:45 PM</div><div class="event">Open Hockey<small>SQ / BT</small></div></div>
-
-    <div class="row day-start"><div class="date"><span class="dow">Sun</span>Oct 18</div><div class="time">1:30 – 3:00 PM</div><div class="event">Public Open Skate</div></div>
-    <div class="row"><div class="date"></div><div class="time">4:45 – 5:45 PM</div><div class="event">Open Hockey<small>MM / MT</small></div></div>
-  </main>
+  <main id="schedule"></main>
 
   <footer>Schedule subject to change</footer>
+
+  <template id="tpl-error">
+    <div class="notice">
+      <!-- drawn inline rather than an emoji so it shows even without an emoji font or network -->
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <circle cx="50" cy="50" r="46" fill="#f2b84c"/>
+        <path d="M27 33 q8 -7 16 -2" stroke="#08111f" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M58 28 q8 -2 15 4" stroke="#08111f" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <circle cx="35" cy="44" r="5" fill="#08111f"/>
+        <circle cx="65" cy="44" r="5" fill="#08111f"/>
+        <path d="M33 72 q9 -8 17 -2 t17 -3" stroke="#08111f" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+      </svg>
+      <h2>Something isn't right!</h2>
+      <p>We're trying to correct it!</p>
+    </div>
+  </template>
+
+  <template id="tpl-empty">
+    <div class="notice">
+      <h2>No public ice this week</h2>
+      <p>Check back soon!</p>
+    </div>
+  </template>
+
+<script>
+  // The rink's ice schedule: one tab per month, named "July", "August", ...
+  const SHEET_ID = '1Wy3NRoOEUZwYbjbC2QXRCyvs1VbQr9chxD2PZbE3qNc';
+  const DAYS_SHOWN = 7;
+  const REFRESH_MS = 15 * 60 * 1000;
+  const RETRY_MS = 2 * 60 * 1000;
+  // reload the page itself now and then so changes pushed to Netlify reach the board
+  const RELOAD_MS = 6 * 60 * 60 * 1000;
+
+  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
+                  'July', 'August', 'September', 'October', 'November', 'December'];
+  const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const DAY_HEADER = /^\s*(sun|mon|tues?|wed(?:nes)?|thu(?:rs)?|fri|sat(?:ur)?)day\s+([a-z]+)\s+(\d{1,2})\b/i;
+
+  // Age levels for Open Hockey, youngest first. Mitey Mite must be stripped before Mite.
+  const LEVELS = [
+    [/mitey(?:\s*mites?)?/i,         'Mitey Mite'],
+    [/\bmites?\b/i,                  'Mite'],
+    [/\bsquirts?\b/i,                'Squirt'],
+    [/\bpee\s*wees?\b/i,             'Peewee'],
+    [/\bbantams?\b/i,                'Bantam'],
+    [/\bh\.\s?s\b\.?|\bhigh school\b/i, 'High School'],
+  ];
+
+  // Decide whether a sheet entry is a public session and how to label it.
+  function classify(text) {
+    const t = text.replace(/\s+/g, ' ').trim();
+    // "XXX PUBLIC SKATE XXX" is how a session gets crossed out
+    if (!t || /try hockey|\bx{2,}\b|cancel/i.test(t)) return null;
+    if (/open hockey/i.test(t)) {
+      let rest = t;
+      const levels = [];
+      for (const [re, label] of LEVELS) {
+        if (re.test(rest)) { levels.push(label); rest = rest.replace(new RegExp(re.source, 'gi'), ' '); }
+      }
+      const ages = t.match(/(\d{1,2})\s*(?:[-–]\s*(\d{1,2})|\+)/);
+      if (!levels.length && ages) levels.push(`Ages ${ages[1]}${ages[2] ? '–' + ages[2] : '+'}`);
+      if (!levels.length && /youth/i.test(t)) levels.push('Youth');
+      return { name: 'Open Hockey', tag: levels.join(' / ') };
+    }
+    if (/parent\s*(?:\/|&|and)?\s*tots?/i.test(t)) return { name: 'Parent / Tot Skate' };
+    if (/senior skate/i.test(t)) return { name: 'Senior Skate' };
+    if (/public skate/i.test(t)) {
+      // keep the occasion for specials like "Halloween Friday Night Public Skate"
+      const extra = t.replace(/public skate/i, ' ').replace(/\s+/g, ' ')
+                     .replace(/^[\s\-–:()]+|[\s\-–:()]+$/g, '');
+      return { name: 'Public Skate', tag: extra };
+    }
+    if (/open skate/i.test(t)) return { name: 'Open Skate' };
+    return null;
+  }
+
+  // "1:15pm-3:15pm", "5:30pm - 9:30pm", "11:45 am PW/BT", "10:30" -> minutes since midnight
+  function parseTime(raw) {
+    const m = raw.toLowerCase().match(
+      /(\d{1,2})(?::(\d{2}))?\s*(?:([ap])\.?\s*m\.?)?(?:\s*[-–]\s*(\d{1,2})(?::(\d{2}))?\s*(?:([ap])\.?\s*m\.?)?)?/);
+    if (!m) return null;
+    const toMin = (h, min, mer) => (+h % 12 + (mer === 'p' ? 12 : 0)) * 60 + (+min || 0);
+    const guess = h => (+h >= 7 && +h <= 11 ? 'a' : 'p');
+    let endMer = m[6] || m[3] || (m[4] ? guess(m[4]) : null);
+    let startMer = m[3] || endMer || guess(m[1]);
+    let start = toMin(m[1], m[2], startMer);
+    let end = m[4] ? toMin(m[4], m[5], endMer) : null;
+    // "11:45-12:45pm": the start inherited pm but is really am
+    if (end !== null && !m[3] && start > end) { startMer = startMer === 'p' ? 'a' : 'p'; start = toMin(m[1], m[2], startMer); }
+    return { start, end };
+  }
+
+  function fmtClock(min, withMer) {
+    const h = Math.floor(min / 60) % 24, mm = min % 60;
+    const s = `${h % 12 || 12}:${String(mm).padStart(2, '0')}`;
+    return withMer ? `${s} ${h < 12 ? 'AM' : 'PM'}` : s;
+  }
+
+  function fmtRange(t) {
+    if (t.end === null) return fmtClock(t.start, true);
+    const sameMer = (t.start < 720) === (t.end < 720);
+    return `${fmtClock(t.start, !sameMer)} – ${fmtClock(t.end, true)}`;
+  }
+
+  function parseCsv(text) {
+    const rows = [];
+    let row = [], field = '', q = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (q) {
+        if (c === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else q = false; }
+        else field += c;
+      } else if (c === '"') q = true;
+      else if (c === ',') { row.push(field); field = ''; }
+      else if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+      else if (c !== '\r') field += c;
+    }
+    if (field || row.length) { row.push(field); rows.push(row); }
+    return rows;
+  }
+
+  // Returns { day -> [ {time, text} ] } for one month tab, or null if the tab doesn't
+  // look like that month (Google silently serves a different tab for unknown names).
+  function parseMonth(csv, monthName) {
+    const days = {};
+    let day = null, found = false;
+    for (const r of parseCsv(csv)) {
+      const head = (r[0] || '').match(DAY_HEADER);
+      if (head) {
+        const ok = head[2].toLowerCase() === monthName.toLowerCase();
+        day = ok ? +head[3] : null;
+        if (ok) { found = true; days[day] = days[day] || []; }
+        continue;
+      }
+      if (day !== null && (r[1] || '').trim()) days[day].push({ time: r[0] || '', text: r[1] });
+    }
+    return found ? days : null;
+  }
+
+  async function loadMonth(name) {
+    const key = 'ice-tab:' + name;
+    try {
+      const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}`;
+      const res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const csv = await res.text();
+      const days = parseMonth(csv, name);
+      if (!days) throw new Error('tab not found: ' + name);
+      try { localStorage.setItem(key, csv); } catch (e) {}
+      return days;
+    } catch (err) {
+      console.warn('Falling back to last good copy of', name, err);
+      // keep the board up through a network or Google hiccup
+      let cached = null;
+      try { cached = localStorage.getItem(key); } catch (e) {}
+      return cached ? parseMonth(cached, name) : null;
+    }
+  }
+
+  function windowDays(now) {
+    const out = [];
+    for (let i = 0; i < DAYS_SHOWN; i++) {
+      out.push(new Date(now.getFullYear(), now.getMonth(), now.getDate() + i));
+    }
+    return out;
+  }
+
+  function rangeLabel(days) {
+    const a = days[0], b = days[days.length - 1];
+    const left = `${MONTHS[a.getMonth()]} ${a.getDate()}`;
+    return a.getMonth() === b.getMonth()
+      ? `${left} – ${b.getDate()}`
+      : `${left} – ${MONTHS[b.getMonth()]} ${b.getDate()}`;
+  }
+
+  async function update() {
+    const now = new Date();
+    const days = windowDays(now);
+    document.getElementById('range').textContent = rangeLabel(days);
+
+    const monthNames = [...new Set(days.map(d => MONTHS[d.getMonth()]))];
+    const tabs = await Promise.all(monthNames.map(loadMonth));
+    if (tabs.some(t => !t)) return showTemplate('tpl-error'), false;
+    const byMonth = Object.fromEntries(monthNames.map((n, i) => [n, tabs[i]]));
+
+    const nowMin = now.getHours() * 60 + now.getMinutes();
+    const sessions = [];
+    days.forEach((d, i) => {
+      const entries = byMonth[MONTHS[d.getMonth()]][d.getDate()] || [];
+      const list = [];
+      entries.forEach((e, order) => {
+        const kind = classify(e.text);
+        if (!kind) return;
+        const t = parseTime(e.time);
+        // drop today's sessions once they're over
+        if (i === 0 && t && nowMin >= (t.end ?? t.start + 60)) return;
+        list.push({ date: d, kind, t, raw: e.time.trim(), order });
+      });
+      list.sort((x, y) => (x.t ? x.t.start : 1e4 + x.order) - (y.t ? y.t.start : 1e4 + y.order));
+      sessions.push(...list);
+    });
+
+    if (!sessions.length) return showTemplate('tpl-empty'), true;
+    render(sessions);
+    return true;
+  }
+
+  function showTemplate(id) {
+    const main = document.getElementById('schedule');
+    main.replaceChildren(document.getElementById(id).content.cloneNode(true));
+  }
+
+  function el(tag, cls, text) {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text) n.textContent = text;
+    return n;
+  }
+
+  function render(sessions) {
+    const main = document.getElementById('schedule');
+    const cols = el('div', 'cols');
+    ['Date', 'Time', 'Event'].forEach(h => cols.append(el('span', null, h)));
+    const rows = [cols];
+
+    let lastDay = null;
+    for (const s of sessions) {
+      const key = s.date.toDateString();
+      const row = el('div', 'row' + (key !== lastDay ? ' day-start' : ''));
+      const date = el('div', 'date');
+      if (key !== lastDay) {
+        date.append(el('span', 'dow', DOW[s.date.getDay()]),
+                    `${MONTHS[s.date.getMonth()].slice(0, 3)} ${s.date.getDate()}`);
+      }
+      const event = el('div', 'event', s.kind.name);
+      if (s.kind.tag) event.append(el('small', null, `(${s.kind.tag})`));
+      row.append(date, el('div', 'time', s.t ? fmtRange(s.t) : s.raw), event);
+      rows.push(row);
+      lastDay = key;
+    }
+    main.replaceChildren(...rows);
+    fit(main, sessions.length);
+  }
+
+  // Shrink type on busy weeks so every row fits, then squeeze any event name that's too wide.
+  function fit(main, count) {
+    const cols = main.querySelector('.cols');
+    const rowH = (main.clientHeight - 14 - cols.offsetHeight) / count;
+    main.style.setProperty('--k', Math.min(1, rowH / 72).toFixed(3));
+    for (const ev of main.querySelectorAll('.event')) {
+      ev.style.fontSize = '';
+      let size = parseFloat(getComputedStyle(ev).fontSize);
+      const min = size * 0.6;
+      while (ev.scrollWidth > ev.clientWidth && size > min) {
+        size -= 1;
+        ev.style.fontSize = size + 'px';
+      }
+    }
+  }
+
+  async function tick() {
+    let ok = false;
+    try { ok = await update(); } catch (err) { console.error(err); showTemplate('tpl-error'); }
+    setTimeout(tick, ok ? REFRESH_MS : RETRY_MS);
+  }
+
+  // Only reload when the site is reachable, so an outage never swaps the board for a browser error page.
+  setInterval(() => {
+    fetch(location.href, { method: 'HEAD', cache: 'no-store' })
+      .then(r => { if (r.ok) location.reload(); })
+      .catch(() => {});
+  }, RELOAD_MS);
+
+  tick();
+</script>
 </body>
 </html>
