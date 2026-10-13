@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Public Ice Schedule</title>
+<style>
+  :root {
+    --bg-deep:   #08111f;
+    --ice:       #4cc4f2;
+    --ice-soft:  #9fdcf6;
+    --amber:     #f2b84c;
+    --text:      #eaf2fb;
+    --text-mute: #93a9c6;
+    --cond: 'Oswald', 'DejaVu Sans Condensed', 'Arial Narrow', sans-serif;
+    --mono: 'Roboto Mono', 'DejaVu Sans Mono', monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1920px; height: 1080px; }
+  body {
+    background:
+      radial-gradient(120% 80% at 50% -10%, rgba(76,196,242,0.10), transparent 60%),
+      var(--bg-deep);
+    color: var(--text);
+    font-family: 'Inter', system-ui, sans-serif;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    /* generous edges so TV overscan never clips the header or footer */
+    padding: 56px 96px 48px;
+  }
+
+  header {
+    flex-shrink: 0;
+    display: grid;
+    grid-template-columns: 220px 1fr 220px;
+    align-items: center;
+    padding-bottom: 22px;
+    border-bottom: 2px solid rgba(76,196,242,0.28);
+  }
+  .brand-logo { height: 132px; display: block; }
+  .brand-title {
+    text-align: center;
+    font-family: var(--cond);
+    font-weight: 700;
+    font-size: 84px;
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+  }
+  .brand-sub {
+    text-align: center;
+    margin-top: 12px;
+    font-family: var(--cond);
+    font-weight: 600;
+    font-size: 30px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ice);
+  }
+
+  main { flex: 1; display: flex; flex-direction: column; padding-top: 14px; min-height: 0; }
+
+  .cols, .row {
+    display: grid;
+    grid-template-columns: 330px 520px 1fr;
+    align-items: center;
+    column-gap: 40px;
+    padding: 0 28px;
+  }
+  .cols {
+    color: var(--text-mute);
+    font-size: 24px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    font-weight: 600;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(76,196,242,0.35);
+  }
+  .row {
+    flex: 1;
+    border-bottom: 1px solid rgba(76,196,242,0.13);
+  }
+  .row:nth-child(even) { background: rgba(76,196,242,0.06); }
+  /* a firmer rule where a new day starts */
+  .row.day-start { border-top: 2px solid rgba(76,196,242,0.30); }
+  .cols + .row.day-start { border-top: 0; }
+
+  .date {
+    font-family: var(--cond);
+    font-weight: 600;
+    font-size: 40px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ice);
+    white-space: nowrap;
+  }
+  .date .dow { color: var(--ice-soft); opacity: 0.85; margin-right: 0.35em; }
+  .time {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 40px;
+    color: var(--amber);
+    white-space: nowrap;
+  }
+  .event {
+    font-family: var(--cond);
+    font-weight: 700;
+    font-size: 50px;
+    line-height: 1.05;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+  }
+  .event small {
+    font-size: 0.62em;
+    font-weight: 600;
+    color: var(--text-mute);
+    margin-left: 0.4em;
+    letter-spacing: 0.06em;
+  }
+
+  footer {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: center;
+    padding-top: 18px;
+    margin-top: 10px;
+    border-top: 1px solid rgba(76,196,242,0.14);
+    font-size: 24px;
+    color: var(--text-mute);
+    letter-spacing: 0.04em;
+  }
+</style>
+</head>
+<body>
+  <header>
+    <img class="brand-logo" src="logo.png" alt="Sheboygan Lakers Hockey">
+    <div>
+      <div class="brand-title">Public Ice Schedule</div>
+      <div class="brand-sub">October 14 – 18</div>
+    </div>
+    <div></div>
+  </header>
+
+  <main>
+    <div class="cols"><span>Date</span><span>Time</span><span>Event</span></div>
+
+    <div class="row day-start"><div class="date"><span class="dow">Wed</span>Oct 14</div><div class="time">1:15 – 3:15 PM</div><div class="event">Public Open Skate</div></div>
+
+    <div class="row day-start"><div class="date"><span class="dow">Thu</span>Oct 15</div><div class="time">9:30 – 10:30 AM</div><div class="event">Parent / Tot Skate</div></div>
+    <div class="row"><div class="date"></div><div class="time">1:15 – 3:15 PM</div><div class="event">Public Open Skate</div></div>
+
+    <div class="row day-start"><div class="date"><span class="dow">Fri</span>Oct 16</div><div class="time">10:45 – 11:45 AM</div><div class="event">Senior Skate</div></div>
+    <div class="row"><div class="date"></div><div class="time">12:00 – 1:00 PM</div><div class="event">Open Hockey</div></div>
+    <div class="row"><div class="date"></div><div class="time">1:15 – 3:15 PM</div><div class="event">Public Open Skate</div></div>
+
+    <div class="row day-start"><div class="date"><span class="dow">Sat</span>Oct 17</div><div class="time">11:45 AM – 12:45 PM</div><div class="event">Open Hockey<small>SQ / BT</small></div></div>
+
+    <div class="row day-start"><div class="date"><span class="dow">Sun</span>Oct 18</div><div class="time">1:30 – 3:00 PM</div><div class="event">Public Open Skate</div></div>
+    <div class="row"><div class="date"></div><div class="time">4:45 – 5:45 PM</div><div class="event">Open Hockey<small>MM / MT</small></div></div>
+  </main>
+
+  <footer>Schedule subject to change</footer>
+</body>
+</html>
