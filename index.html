@@ -245,10 +245,19 @@
     }
     if (/parent\s*(?:\/|&|and)?\s*tots?/i.test(t)) return { name: 'Parent / Tot Skate' };
     if (/senior skate/i.test(t)) return { name: 'Senior Skate' };
-    // specials ("Thanksgiving Day Public Skate - Free Admission ...") show as plain Public Skate
-    if (/public skate/i.test(t)) return { name: 'Public Skate' };
+    if (/public skate/i.test(t)) return { name: 'Public Skate', tag: occasion(t) };
     if (/open skate/i.test(t)) return { name: 'Open Skate' };
     return null;
+  }
+
+  // Name of a special public skate, without the extra details:
+  //   "Thanksgiving Day Public Skate - Free Admission with ..." -> "Thanksgiving Day"
+  //   "Public Skate - Glow Skate" / "Public Skate (Skate With A Cop)" -> the part after
+  function occasion(t) {
+    const parts = t.split(/\s+[-–]\s+|[()]/).map(p => p.trim()).filter(Boolean);
+    const i = parts.findIndex(p => /public skate/i.test(p));
+    const own = parts[i].replace(/public skate/i, ' ').replace(/\s+/g, ' ').trim();
+    return own || parts[i + 1] || '';
   }
 
   // "1:15pm-3:15pm", "5:30pm - 9:30pm", "11:45 am PW/BT", "10:30" -> minutes since midnight
