@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <title>Public Ice Schedule</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg-deep:   #08111f;
@@ -44,7 +47,7 @@
     text-align: center;
     font-family: var(--cond);
     font-weight: 700;
-    font-size: 84px;
+    font-size: 74px;
     line-height: 1;
     text-transform: uppercase;
     letter-spacing: 0.01em;
@@ -55,7 +58,7 @@
     min-height: 1.2em;
     font-family: var(--cond);
     font-weight: 600;
-    font-size: 30px;
+    font-size: 26px;
     letter-spacing: 0.22em;
     text-transform: uppercase;
     color: var(--ice);
@@ -72,7 +75,7 @@
   }
   .cols {
     color: var(--text-mute);
-    font-size: 24px;
+    font-size: 22px;
     letter-spacing: 0.3em;
     text-transform: uppercase;
     font-weight: 600;
@@ -93,7 +96,7 @@
   .date {
     font-family: var(--cond);
     font-weight: 600;
-    font-size: calc(40px * var(--k));
+    font-size: calc(36px * var(--k));
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: var(--ice);
@@ -103,14 +106,14 @@
   .time {
     font-family: var(--mono);
     font-weight: 700;
-    font-size: calc(40px * var(--k));
+    font-size: calc(36px * var(--k));
     color: var(--amber);
     white-space: nowrap;
   }
   .event {
     font-family: var(--cond);
     font-weight: 700;
-    font-size: calc(50px * var(--k));
+    font-size: calc(46px * var(--k));
     line-height: 1.05;
     text-transform: uppercase;
     letter-spacing: 0.01em;
@@ -140,7 +143,7 @@
   .notice h2 {
     font-family: var(--cond);
     font-weight: 700;
-    font-size: 72px;
+    font-size: 64px;
     text-transform: uppercase;
     letter-spacing: 0.01em;
   }
@@ -426,6 +429,8 @@
     }
     main.replaceChildren(...rows);
     fit(main, sessions.length);
+    // web fonts can arrive after the first render and change text widths
+    if (document.fonts) document.fonts.ready.then(() => fit(main, sessions.length));
   }
 
   // Shrink type on busy weeks so every row fits, then squeeze any event name that's too wide.
